@@ -2,37 +2,98 @@
 
 namespace app\models;
 
-class User extends \yii\base\Object implements \yii\web\IdentityInterface
-{
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
+use Yii;
+use yii\db\ActiveRecord;
 
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
+class User extends ActiveRecord implements \yii\web\IdentityInterface
+{
+    public $authKey;
+
+    /**
+     * @return string the name of the table associated with this ActiveRecord class.
+     */
+    public static function tableName()
+    {
+        return 'user';
+    }
+
+    /**
+     * @return array the validation rules.
+     */
+    public function rules()
+    {
+        return [
+            ['email', 'required'],
+            ['email', 'email'],
+            ['name', 'string', 'length' => [1, 255]],
+            ['password', 'string', 'length' => [1, 255]],
+        ];
+    }
+
+    /**
+     * Register user
+     * @param $email
+     */
+    public static function register($email)
+    {
+        // mark register record used
+        Register::setUsed($email);
+
+        // save user in user table
+        $user = new self();
+        $user->email = $email;
+        $user->name = '';
+        $user->password = self::generatePassword(8);
+        $user->save();
+
+        // TODO: send email with password
+    }
+
+    /**
+     * TODO: take this function to another place
+     * @param int $length
+     * @return string
+     */
+    public static function generatePassword($length = 8)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $count = mb_strlen($chars);
+
+        for ($i = 0, $result = ''; $i < $length; $i++) {
+            $index = rand(0, $count - 1);
+            $result .= mb_substr($chars, $index, 1);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Check authorize information
+     * @param string $email login
+     * @param string $password
+     * @return boolean
+     */
+    public static function checkAuth($email, $password)
+    {
+        $matchesCount = self::find()
+            ->where([
+                'email'    => $email,
+                'password' => /*md5*/($password) // TODO: take hash
+            ])->count();
+
+        return ($matchesCount > 0);
+    }
 
     /**
      * @inheritdoc
      */
-    public static function findIdentity($id)
+    public static function findIdentity($email)
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        $user = self::find()
+            ->where(['email' => $email])
+            ->one();
+
+        return (count($user) ? $user : null);
     }
 
     /**
@@ -40,25 +101,9 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
+        // TODO: ?
         foreach (self::$users as $user) {
             if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Finds user by username
-     *
-     * @param  string      $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
                 return new static($user);
             }
         }
@@ -71,7 +116,7 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public function getId()
     {
-        return $this->id;
+        return $this->email;
     }
 
     /**

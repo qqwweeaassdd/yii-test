@@ -7,6 +7,14 @@ $config = [
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'components' => [
+        'defaultController' => 'User',
+
+        //'defaultRoute' => 'user',
+        /*'urlManager' => [
+            'rules' => [
+                '' => 'user/index',
+            ],
+        ],*/
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'cyEqGAz91qcHIKpqY44_ivlR7UZ2xOby',
@@ -27,6 +35,18 @@ $config = [
             // 'useFileTransport' to false and configure a transport
             // for the mailer to send real emails.
             'useFileTransport' => true,
+            /*'transport' => [
+                'class' => 'Swift_SmtpTransport',
+                'constructArgs' => ['localhost', 25],
+            ],*/
+            /*'transport' => [
+                'class' => 'Swift_SmtpTransport',
+                'host' => 'localhost',
+                'username' => 'username',
+                'password' => 'password',
+                'port' => '587',
+                'encryption' => 'tls',
+            ],*/
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -41,6 +61,7 @@ $config = [
     ],
     'params' => $params,
 ];
+
 
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment

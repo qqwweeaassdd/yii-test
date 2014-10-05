@@ -14,8 +14,9 @@ class m141005_075112_create_user_table extends Migration
         ]);
 
         $this->createTable('user', [
-            'email' => Schema::TYPE_STRING . ' NOT NULL PRIMARY KEY',
-            'name'  => Schema::TYPE_STRING,
+            'email'    => Schema::TYPE_STRING . ' NOT NULL PRIMARY KEY',
+            'name'     => Schema::TYPE_STRING,
+            'password' => Schema::TYPE_STRING,
         ]);
 
         $this->createIndex('email', 'registration', 'email', true);

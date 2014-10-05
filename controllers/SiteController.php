@@ -49,7 +49,9 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        return $this->render('index');
+        // TODO: replace with default controller setting
+        return $this->redirect(['user/index']);
+        //return $this->render('index');
     }
 
     public function actionLogin()

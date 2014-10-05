@@ -40,10 +40,11 @@ AppAsset::register($this);
                     ['label' => 'Register', 'url' => ['/user/register']],
                 ];
             } else {
+                $idetity = Yii::$app->user->identity;
                 // Authorized user's menu items
                 $menuItems = [
                     ['label'       => 'Profile', 'url' => ['/user/profile']],
-                    ['label'       => 'Logout (' . Yii::$app->user->identity->username . ')',
+                    ['label'       => 'Logout (' . ($idetity->name ? $idetity->name : $idetity->email) . ')',
                      'url'         => ['/user/logout'],
                      'linkOptions' => ['data-method' => 'post']],
                 ];

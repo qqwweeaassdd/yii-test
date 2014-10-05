@@ -8,7 +8,7 @@ use yii\db\ActiveRecord;
 /**
  * Register model
  */
-class Register extends ActiveRecord
+class RegisterModel extends ActiveRecord
 {
     public static function tableName()
     {
@@ -30,16 +30,17 @@ class Register extends ActiveRecord
     }
 
     /**
-     * Check email validation
-     * @param string $attribute the attribute currently being validated
+     * Test if email in base already
+     * @param string $email
+     * @return bool
      */
-    public function checkEmail($attribute)
+    public static function isEmailBusy($email)
     {
-        if (!$this->hasErrors()) {
-            if (RegisterModel::isEmailBusy($this->email)) {
-                $this->addError($attribute, 'You\'re registered already.');
-            }
-        }
+        $matchesCount = self::find()
+            ->where(['email' => $email])
+            ->count();
+
+        return ($matchesCount > 0);
     }
 
     /**
@@ -50,17 +51,14 @@ class Register extends ActiveRecord
      */
     public static function checkConfirm($email, $secure)
     {
-        return RegisterModel::checkConfirm($email, $secure);
-    }
+        $matchesCount = self::find()
+            ->where([
+                'email'  => $email,
+                'secure' => $secure,
+                'used'   => false,
+            ])
+            ->count();
 
-    /**
-     * Set register record used
-     * @param $email
-     */
-    public static function setUsed($email)
-    {
-        $register = self::findOne($email);
-        $register->used = true;
-        $register->update(false);
+        return ($matchesCount > 0);
     }
 }

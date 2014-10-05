@@ -55,6 +55,7 @@ class UserController extends Controller
      */
     public function actionIndex()
     {
+        //Yii::$app->user->logout();
         return $this->render('index');
     }
 
@@ -130,7 +131,7 @@ class UserController extends Controller
 
         $get = Yii::$app->request->get();
         if ($get && Register::checkConfirm($get['email'], $get['secure'])) {
-            // TODO: user register
+            // Email checked! Add new user
             User::register($get['email']);
 
             return $this->redirect(['profile']);
@@ -150,9 +151,7 @@ class UserController extends Controller
             return $this->goHome();
         }
 
-        // TODO: get real user
-        $user = User::findIdentity('qwe02@mail.ru');
-
+        $user = Yii::$app->user->identity;
         if (Yii::$app->request->post()) {
             if ($user->load(Yii::$app->request->post()) && $user->validate()) {
                 $user->update();
@@ -173,13 +172,10 @@ class UserController extends Controller
             return $this->goHome();
         }
 
-
-//print_r($user); die('+'.$user);
-
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
             // user authorized
-            return $this->goBack();
+            return $this->redirect(['profile']);
         } else {
             return $this->render('login', [
                 'model' => $model,
@@ -195,6 +191,6 @@ class UserController extends Controller
     {
         Yii::$app->user->logout();
 
-        return $this->goHome();
+        return $this->redirect(['login']);
     }
 }

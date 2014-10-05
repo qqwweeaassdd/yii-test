@@ -43,28 +43,12 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
         $user = new self();
         $user->email = $email;
         $user->name = '';
-        $user->password = self::generatePassword(8);
+        $user->password = YHelper::generatePassword(8);
         $user->save();
 
+        Yii::$app->user->login($user);
+
         // TODO: send email with password
-    }
-
-    /**
-     * TODO: take this function to another place
-     * @param int $length
-     * @return string
-     */
-    public static function generatePassword($length = 8)
-    {
-        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        $count = mb_strlen($chars);
-
-        for ($i = 0, $result = ''; $i < $length; $i++) {
-            $index = rand(0, $count - 1);
-            $result .= mb_substr($chars, $index, 1);
-        }
-
-        return $result;
     }
 
     /**
@@ -89,11 +73,7 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
      */
     public static function findIdentity($email)
     {
-        $user = self::find()
-            ->where(['email' => $email])
-            ->one();
-
-        return (count($user) ? $user : null);
+        return static::findOne($email);
     }
 
     /**
@@ -101,14 +81,7 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        // TODO: ?
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
-        return null;
+        return static::findOne(['access_token' => $token]);
     }
 
     /**
@@ -124,7 +97,7 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
      */
     public function getAuthKey()
     {
-        return $this->authKey;
+        return md5($this->email . $this->password);
     }
 
     /**
